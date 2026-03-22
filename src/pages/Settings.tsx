@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Settings as SettingsIcon, Save, Check } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Check, Key } from 'lucide-react';
 
 export default function Settings() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [aiApi, setAiApi] = useState('gemini');
+  const [aiApi, setAiApi] = useState('openai');
+  const [apiKey, setApiKey] = useState('');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -14,12 +15,15 @@ export default function Settings() {
       navigate('/login');
       return;
     }
-    const savedApi = localStorage.getItem('selected_ai_api') || 'gemini';
+    const savedApi = localStorage.getItem('selected_ai_api') || 'openai';
+    const savedKey = localStorage.getItem('openai_api_key') || '';
     setAiApi(savedApi);
+    setApiKey(savedKey);
   }, [user, navigate]);
 
   const handleSave = () => {
     localStorage.setItem('selected_ai_api', aiApi);
+    localStorage.setItem('openai_api_key', apiKey);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -43,21 +47,6 @@ export default function Settings() {
         </p>
 
         <div className="space-y-4">
-          <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${aiApi === 'gemini' ? 'border-emerald-500 bg-emerald-50' : 'border-stone-200 hover:bg-stone-50'}`}>
-            <input
-              type="radio"
-              name="ai_api"
-              value="gemini"
-              checked={aiApi === 'gemini'}
-              onChange={(e) => setAiApi(e.target.value)}
-              className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-stone-300"
-            />
-            <div className="ml-3">
-              <span className="block text-sm font-medium text-stone-900">Google Gemini (Default)</span>
-              <span className="block text-sm text-stone-500">Fast and accurate ID analysis using Gemini models.</span>
-            </div>
-          </label>
-
           <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${aiApi === 'openai' ? 'border-emerald-500 bg-emerald-50' : 'border-stone-200 hover:bg-stone-50'}`}>
             <input
               type="radio"
@@ -69,24 +58,29 @@ export default function Settings() {
             />
             <div className="ml-3">
               <span className="block text-sm font-medium text-stone-900">OpenAI (GPT-4o)</span>
-              <span className="block text-sm text-stone-500">High-performance vision capabilities.</span>
+              <span className="block text-sm text-stone-500">High-performance vision capabilities. Currently active.</span>
             </div>
           </label>
+        </div>
 
-          <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${aiApi === 'anthropic' ? 'border-emerald-500 bg-emerald-50' : 'border-stone-200 hover:bg-stone-50'}`}>
+        <div className="mt-8 pt-6 border-t border-stone-200">
+          <h2 className="text-xl font-semibold text-stone-800 mb-4 flex items-center">
+            <Key className="w-5 h-5 mr-2 text-stone-500" />
+            API Key Configuration
+          </h2>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-stone-700">OpenAI API Key</label>
             <input
-              type="radio"
-              name="ai_api"
-              value="anthropic"
-              checked={aiApi === 'anthropic'}
-              onChange={(e) => setAiApi(e.target.value)}
-              className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-stone-300"
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-..."
+              className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
-            <div className="ml-3">
-              <span className="block text-sm font-medium text-stone-900">Anthropic (Claude 3.5 Sonnet)</span>
-              <span className="block text-sm text-stone-500">Advanced reasoning and detail extraction.</span>
-            </div>
-          </label>
+            <p className="text-xs text-stone-500">
+              Your key is stored locally in your browser. If left blank, the app will try to use the Vercel environment variable (VITE_OPENAI_API_KEY).
+            </p>
+          </div>
         </div>
 
         <div className="mt-8 flex items-center">

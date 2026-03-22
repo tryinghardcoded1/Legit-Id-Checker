@@ -1,6 +1,4 @@
-import { GoogleGenAI, Type } from '@google/genai';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import OpenAI from 'openai';
 
 export interface ScamAnalysisResult {
   trustScore: number;
@@ -11,11 +9,16 @@ export interface ScamAnalysisResult {
 }
 
 export const analyzeQuery = async (idType: string, language: string = 'English', frontImageBase64?: string, backImageBase64?: string): Promise<ScamAnalysisResult> => {
-  const selectedApi = localStorage.getItem('selected_ai_api') || 'gemini';
-  
-  if (selectedApi !== 'gemini') {
-    console.warn(`Selected AI API (${selectedApi}) is not fully configured. Using default AI engine.`);
+  const apiKey = localStorage.getItem('openai_api_key') || import.meta.env.VITE_OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("OpenAI API Key is missing. Please add it in the Settings panel.");
   }
+
+  const openai = new OpenAI({
+    apiKey: apiKey,
+    dangerouslyAllowBrowser: true
+  });
 
   const systemInstruction = `You are "Ali", the AI brain and fraud detection expert for the Philippines. Your primary role is to determine the legitimacy of an ID. Analyze the provided ID images for signs of forgery, tampering, or mismatch with the expected format. If both front and back of an ID are provided, cross-reference them for consistency (e.g., barcodes, holograms, matching info).
 
@@ -34,80 +37,55 @@ Crucially, provide detailed "Reasoning" for the ID authenticity:
   * Microprint text clarity: Confirm the crispness and legibility of microprinting under magnification simulation.
   * Other features: Consistent typography, correct UV features (if visible), and proper card material texture.
 
-IMPORTANT: You MUST provide the "Red Flags", "Green Flags", and "Reasoning" in ${language}. The "idType" should remain in English.`;
+IMPORTANT: You MUST provide the "Red Flags", "Green Flags", and "Reasoning" in ${language || 'English'}. The "idType" should remain in English.
 
-  const parts: any[] = [];
+You must respond in JSON format matching this schema:
+{
+  "trustScore": number,
+  "redFlags": string[],
+  "greenFlags": string[],
+  "idType": string,
+  "reasoning": string
+}`;
+
+  const content: any[] = [];
+  
   if (idType) {
-    parts.push({ text: `The user claims this ID is a: ${idType}. Please verify if the uploaded image matches this ID type and check for authenticity.` });
+    content.push({ type: "text", text: `The user claims this ID is a: ${idType}. Please verify if the uploaded image matches this ID type and check for authenticity.` });
   } else {
-    parts.push({ text: `Analyze the provided ID image(s) for authenticity and potential scam flags.` });
+    content.push({ type: "text", text: `Analyze the provided ID image(s) for authenticity and potential scam flags.` });
   }
 
   if (frontImageBase64) {
-    const mimeType = frontImageBase64.substring(frontImageBase64.indexOf(':') + 1, frontImageBase64.indexOf(';'));
-    const base64Data = frontImageBase64.split(',')[1];
-    parts.push({ text: 'Front of ID:' });
-    parts.push({
-      inlineData: {
-        data: base64Data,
-        mimeType
-      }
+    const url = frontImageBase64.startsWith('data:') ? frontImageBase64 : `data:image/jpeg;base64,${frontImageBase64}`;
+    content.push({
+      type: "image_url",
+      image_url: { url }
     });
   }
 
   if (backImageBase64) {
-    const mimeType = backImageBase64.substring(backImageBase64.indexOf(':') + 1, backImageBase64.indexOf(';'));
-    const base64Data = backImageBase64.split(',')[1];
-    parts.push({ text: 'Back of ID:' });
-    parts.push({
-      inlineData: {
-        data: base64Data,
-        mimeType
-      }
+    const url = backImageBase64.startsWith('data:') ? backImageBase64 : `data:image/jpeg;base64,${backImageBase64}`;
+    content.push({
+      type: "image_url",
+      image_url: { url }
     });
   }
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.1-pro-preview',
-    contents: { parts },
-    config: {
-      systemInstruction,
-      responseMimeType: 'application/json',
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          trustScore: {
-            type: Type.NUMBER,
-            description: 'A trust score from 1 (very likely a scam) to 10 (very trustworthy).'
-          },
-          redFlags: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: 'List of red flags identified.'
-          },
-          greenFlags: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: 'List of green flags identified.'
-          },
-          idType: {
-            type: Type.STRING,
-            description: 'The detected format/type of the Philippine ID (e.g., PhilSys, UMID, Driver\'s License). Null if no ID is detected.'
-          },
-          reasoning: {
-            type: Type.STRING,
-            description: 'A clear explanation of why the ID or query is considered fake or legit, pointing out specific details from the front and back of the ID if provided.'
-          }
-        },
-        required: ['trustScore', 'redFlags', 'greenFlags', 'reasoning']
-      }
-    }
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: systemInstruction },
+      { role: "user", content }
+    ],
+    response_format: { type: "json_object" },
+    max_tokens: 1500,
   });
 
-  const text = response.text;
-  if (!text) {
-    throw new Error('No response from AI');
+  const resultText = response.choices[0].message.content;
+  if (!resultText) {
+    throw new Error("No response from OpenAI");
   }
 
-  return JSON.parse(text) as ScamAnalysisResult;
+  return JSON.parse(resultText) as ScamAnalysisResult;
 };
