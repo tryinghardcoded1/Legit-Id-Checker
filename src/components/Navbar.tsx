@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
-import { ShieldCheck, LogOut, User, History, ShieldAlert, UserX } from 'lucide-react';
+import { ShieldCheck, LogOut, User, History, ShieldAlert, UserX, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
@@ -62,6 +62,10 @@ export default function Navbar() {
                   <Link to="/history" className="flex items-center space-x-1 hover:text-emerald-300 transition text-sm font-medium">
                     <History className="w-4 h-4" />
                     <span className="hidden sm:inline">History</span>
+                  </Link>
+                  <Link to="/settings" className="flex items-center space-x-1 hover:text-emerald-300 transition text-sm font-medium">
+                    <SettingsIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline">Settings</span>
                   </Link>
                   {isAdmin && !isImpersonating && (
                     <Link to="/admin" className="flex items-center space-x-1 hover:text-emerald-300 transition text-sm font-medium">

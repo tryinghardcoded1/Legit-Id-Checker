@@ -11,6 +11,12 @@ export interface ScamAnalysisResult {
 }
 
 export const analyzeQuery = async (idType: string, language: string = 'English', frontImageBase64?: string, backImageBase64?: string): Promise<ScamAnalysisResult> => {
+  const selectedApi = localStorage.getItem('selected_ai_api') || 'gemini';
+  
+  if (selectedApi !== 'gemini') {
+    console.warn(`Selected AI API (${selectedApi}) is not fully configured. Using default AI engine.`);
+  }
+
   const systemInstruction = `You are "Ali", the AI brain and fraud detection expert for the Philippines. Your primary role is to determine the legitimacy of an ID. Analyze the provided ID images for signs of forgery, tampering, or mismatch with the expected format. If both front and back of an ID are provided, cross-reference them for consistency (e.g., barcodes, holograms, matching info).
 
 If the user claims a specific ID type (like PhilHealth ID, Driver's License, UMID, etc.), rigorously verify that the ID matches the official format for that ID type. For example, a PhilHealth ID must have the correct PhilHealth logo, a 12-digit PhilHealth Identification Number (PIN) formatted as XX-XXXXXXXXX-X, and the member's photo and signature. If the layout, fonts, or fields do not match the expected official template, flag it as fake.

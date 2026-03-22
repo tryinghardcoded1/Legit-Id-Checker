@@ -342,13 +342,50 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="md:col-span-2 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start space-x-3 mt-2">
-                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-blue-900">For 80%+ Accuracy</h4>
-                  <p className="text-sm text-blue-800 mt-1">
-                    Please ensure your photos are <strong>clear, well-lit, and in-focus</strong>. Make sure all text is readable and the ID is not obstructed by glare or fingers.
-                  </p>
+              <div className="md:col-span-2 bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col space-y-3 mt-2">
+                <div className="flex items-start space-x-3">
+                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-bold text-blue-900">For 95%+ Accuracy</h4>
+                    <p className="text-sm text-blue-800 mt-1">
+                      Please ensure your photos are <strong>clear, well-lit, and in-focus</strong>. Make sure all text is readable and the ID is not obstructed by glare or fingers.
+                    </p>
+                    
+                    <details className="mt-3 group cursor-pointer text-sm">
+                      <summary className="font-semibold text-blue-700 hover:text-blue-900 transition-colors list-none flex items-center">
+                        <span className="mr-2">View Examples & Common Issues</span>
+                        <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </summary>
+                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-blue-200">
+                        <div className="bg-white p-3 rounded-lg shadow-sm border border-emerald-100">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Check className="w-4 h-4 text-emerald-600" />
+                            <span className="font-bold text-emerald-800">Good Example</span>
+                          </div>
+                          <img src="https://picsum.photos/seed/good-id/300/200" alt="Clear, well-lit ID example" className="w-full h-24 object-cover rounded border border-stone-200 mb-2" referrerPolicy="no-referrer" />
+                          <ul className="text-xs text-stone-600 list-disc pl-4 space-y-1">
+                            <li>Even lighting, no shadows</li>
+                            <li>All text is sharp and readable</li>
+                            <li>Edges of the ID are visible</li>
+                          </ul>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg shadow-sm border border-red-100">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <X className="w-4 h-4 text-red-600" />
+                            <span className="font-bold text-red-800">Bad Example</span>
+                          </div>
+                          <img src="https://picsum.photos/seed/bad-id/300/200?blur=4" alt="Blurry, poorly lit ID example" className="w-full h-24 object-cover rounded border border-stone-200 mb-2" referrerPolicy="no-referrer" />
+                          <ul className="text-xs text-stone-600 list-disc pl-4 space-y-1">
+                            <li><strong>Glare:</strong> Flash reflecting off the card</li>
+                            <li><strong>Blur:</strong> Camera out of focus or moving</li>
+                            <li><strong>Obstruction:</strong> Fingers covering text</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </details>
+                  </div>
                 </div>
               </div>
 
