@@ -6,7 +6,7 @@ import { Settings as SettingsIcon, Save, Check, Key } from 'lucide-react';
 export default function Settings() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [aiApi, setAiApi] = useState('openai');
+  const [aiApi, setAiApi] = useState('gemini');
   const [apiKey, setApiKey] = useState('');
   const [saved, setSaved] = useState(false);
 
@@ -15,7 +15,7 @@ export default function Settings() {
       navigate('/login');
       return;
     }
-    const savedApi = localStorage.getItem('selected_ai_api') || 'openai';
+    const savedApi = localStorage.getItem('selected_ai_api') || 'gemini';
     const savedKey = localStorage.getItem('openai_api_key') || '';
     setAiApi(savedApi);
     setApiKey(savedKey);
@@ -47,6 +47,21 @@ export default function Settings() {
         </p>
 
         <div className="space-y-4">
+          <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${aiApi === 'gemini' ? 'border-emerald-500 bg-emerald-50' : 'border-stone-200 hover:bg-stone-50'}`}>
+            <input
+              type="radio"
+              name="ai_api"
+              value="gemini"
+              checked={aiApi === 'gemini'}
+              onChange={(e) => setAiApi(e.target.value)}
+              className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-stone-300"
+            />
+            <div className="ml-3">
+              <span className="block text-sm font-medium text-stone-900">Google Gemini (Default)</span>
+              <span className="block text-sm text-stone-500">Fast and accurate ID analysis using Gemini models.</span>
+            </div>
+          </label>
+
           <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${aiApi === 'openai' ? 'border-emerald-500 bg-emerald-50' : 'border-stone-200 hover:bg-stone-50'}`}>
             <input
               type="radio"
@@ -58,7 +73,7 @@ export default function Settings() {
             />
             <div className="ml-3">
               <span className="block text-sm font-medium text-stone-900">OpenAI (GPT-4o)</span>
-              <span className="block text-sm text-stone-500">High-performance vision capabilities. Currently active.</span>
+              <span className="block text-sm text-stone-500">High-performance vision capabilities.</span>
             </div>
           </label>
         </div>
